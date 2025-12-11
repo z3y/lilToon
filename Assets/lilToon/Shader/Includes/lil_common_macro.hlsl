@@ -2078,12 +2078,22 @@ struct lilLightData
 #if defined(LIL_USE_LIGHTMAP) || defined(LIL_USE_ADDITIONALLIGHT_MAINDIR_PS)
     #define LIL_CORRECT_LIGHTCOLOR_VS(lightColor)
     #define LIL_CORRECT_LIGHTCOLOR_PS(lightColor) \
-        lightColor = clamp(lightColor, _LightMinLimit, _LightMaxLimit); \
+        float halfLambertMidpoint = 0.5 * cos(radians(45)) + 0.5; \
+        halfLambertMidpoint *= halfLambertMidpoint; \
+        lightColor *= halfLambertMidpoint; \
+        float lightColorRenorm = max(max(lightColor.r, lightColor.g), lightColor.b); \
+        if (lightColorRenorm > _LightMaxLimit) \
+            lightColor /= lightColorRenorm / _LightMaxLimit; \
         lightColor = lerp(lightColor, lilGray(lightColor), _MonochromeLighting); \
         lightColor = lerp(lightColor, 1.0, _AsUnlit)
 #else
     #define LIL_CORRECT_LIGHTCOLOR_VS(lightColor) \
-        lightColor = clamp(lightColor, _LightMinLimit, _LightMaxLimit); \
+        float halfLambertMidpoint = 0.5 * cos(radians(45)) + 0.5; \
+        halfLambertMidpoint *= halfLambertMidpoint; \
+        lightColor *= halfLambertMidpoint; \
+        float lightColorRenorm = max(max(lightColor.r, lightColor.g), lightColor.b); \
+        if (lightColorRenorm > _LightMaxLimit) \
+            lightColor /= lightColorRenorm / _LightMaxLimit; \
         lightColor = lerp(lightColor, lilGray(lightColor), _MonochromeLighting); \
         lightColor = lerp(lightColor, 1.0, _AsUnlit)
     #define LIL_CORRECT_LIGHTCOLOR_PS(lightColor)
